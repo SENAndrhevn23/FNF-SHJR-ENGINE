@@ -193,16 +193,19 @@ class PlayState extends MusicBeatState
 	public var healthGain:Float = 1;
 	public var healthLoss:Float = 1;
 
-	//Optimizations settings
-	public var disableComboPopup:Bool = false;
-    public var disableComboNumberPopup:Bool = false;
-    public var disableComboRatingPopup:Bool = false;
-
 	public var guitarHeroSustains:Bool = false;
 	public var instakillOnMiss:Bool = false;
 	public var cpuControlled:Bool = false;
 	public var practiceMode:Bool = false;
 	public var pressMissDamage:Float = 0.05;
+
+
+
+	// Recycling PopUps
+	public var showRating:Bool = ClientPrefs.data.showRating;
+	public var showComboNum:Bool = ClientPrefs.data.showComboNum;
+	public var showCombo:Bool = ClientPrefs.data.showCombo;
+	public var skipArrowStartTween:Bool = false;
 
 	public var botplaySine:Float = 0;
 	public var botplayTxt:FlxText;
@@ -251,6 +254,7 @@ class PlayState extends MusicBeatState
 	var keysPressed:Array<Int> = [];
 	var boyfriendIdleTime:Float = 0.0;
 	var boyfriendIdled:Bool = false;
+
 
 	// Lua shit
 	public static var instance:PlayState;
@@ -1528,7 +1532,7 @@ class PlayState extends MusicBeatState
 		callOnScripts('onEventPushed', [subEvent.event, subEvent.value1 != null ? subEvent.value1 : '', subEvent.value2 != null ? subEvent.value2 : '', subEvent.strumTime]);
 	}
 
-	public var skipArrowStartTween:Bool = false; //for lua
+	
 	private function generateStaticArrows(player:Int):Void
 	{
 		var strumLineX:Float = ClientPrefs.data.middleScroll ? STRUM_X_MIDDLESCROLL : STRUM_X;
@@ -1726,7 +1730,7 @@ class PlayState extends MusicBeatState
 
 		if (startedCountdown && !paused)
 		{
-			Conductor.songPosition += elapsed * 1000 * playbackRate;
+			Conductor.songPosition += elapsed * 1000;
 			if (Conductor.songPosition >= Conductor.offset)
 			{
 				Conductor.songPosition = FlxMath.lerp(FlxG.sound.music.time + Conductor.offset, Conductor.songPosition, Math.exp(-elapsed * 5));
@@ -2527,10 +2531,6 @@ class PlayState extends MusicBeatState
 	public var totalPlayed:Int = 0;
 	public var totalNotesHit:Float = 0.0;
 
-	public var showCombo:Bool = false;
-	public var showComboNum:Bool = true;
-	public var showRating:Bool = true;
-
 	// Stores Ratings and Combo Sprites in a group
 	public var comboGroup:FlxSpriteGroup;
 	// Stores HUD Objects in a Group
@@ -3083,22 +3083,35 @@ class PlayState extends MusicBeatState
 				}
 			}
 
-			if(!cpuControlled)
-			{
-				var spr = playerStrums.members[note.noteData];
-				if(spr != null) spr.playAnim('confirm', true);
-			}
-			else strumPlayAnim(false, Std.int(Math.abs(note.noteData)), Conductor.stepCrochet * 1.25 / 1000 / playbackRate);
-			vocals.volume = 1;
+if(!cpuControlled)
+{
+	var spr = playerStrums.members[note.noteData];
+	if(spr != null) spr.playAnim('confirm', true);
+}
+else 
+{
+	strumPlayAnim(false, Std.int(Math.abs(note.noteData)), Conductor.stepCrochet * 1.25 / 1000 / playbackRate);
+}
 
-			if (!note.isSustainNote)
-			{
-				combo++;
-				popUpScore(note);
-			}
-			var gainHealth:Bool = true; // prevent health gain, *if* sustains are treated as a singular note
-			if (guitarHeroSustains && note.isSustainNote) gainHealth = false;
-			if (gainHealth) health += note.hitHealth * healthGain;
+vocals.volume = 1;
+
+if (!note.isSustainNote)
+{
+	combo++;
+
+	// Dynamic combo limit from Optimizations menu
+	var maxCombo:Int = ClientPrefs.data.limitCombo;
+	if(maxCombo > 0 && combo > maxCombo)
+	{
+		combo = maxCombo;
+	}
+
+	popUpScore(note);
+}
+
+var gainHealth:Bool = true; // prevent health gain, *if* sustains are treated as a singular note
+if (guitarHeroSustains && note.isSustainNote) gainHealth = false;
+if (gainHealth) health += note.hitHealth * healthGain;
 
 		}
 		else //Notes that count as a miss if you hit them (Hurt notes for example)
