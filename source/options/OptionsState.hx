@@ -27,25 +27,21 @@ class OptionsState extends MusicBeatState
 		{
 			case 'Note Colors':
 				openSubState(new options.NotesColorSubState());
-
 			case 'Controls':
 				openSubState(new options.ControlsSubState());
-
 			case 'Graphics':
 				openSubState(new options.GraphicsSettingsSubState());
-
 			case 'Visuals':
 				openSubState(new options.VisualsSettingsSubState());
-
 			case 'Gameplay':
 				openSubState(new options.GameplaySettingsSubState());
 
-			case 'Optimization': // ✅ NEW STATE
-				openSubState(new options.OptimizationSettingsSubState());
+			case 'Optimization': 
+				// ✅ FIXED CASE (Substate instead of SubState)
+				openSubState(new options.OptimizationSettingsSubstate());
 
 			case 'Adjust Delay and Combo':
 				MusicBeatState.switchState(new options.NoteOffsetState());
-
 			case 'Language':
 				openSubState(new options.LanguageSubState());
 		}
@@ -109,16 +105,12 @@ class OptionsState extends MusicBeatState
 	{
 		super.update(elapsed);
 
-		if (controls.UI_UP_P)
-			changeSelection(-1);
-
-		if (controls.UI_DOWN_P)
-			changeSelection(1);
+		if (controls.UI_UP_P) changeSelection(-1);
+		if (controls.UI_DOWN_P) changeSelection(1);
 
 		if (controls.BACK)
 		{
 			FlxG.sound.play(Paths.sound('cancelMenu'));
-
 			if(onPlayState)
 			{
 				StageData.loadDirectory(PlayState.SONG);
@@ -148,15 +140,12 @@ class OptionsState extends MusicBeatState
 			if (item.targetY == 0)
 			{
 				item.alpha = 1;
-
 				selectorLeft.x = item.x - 63;
 				selectorLeft.y = item.y;
-
 				selectorRight.x = item.x + item.width + 15;
 				selectorRight.y = item.y;
 			}
 		}
-
 		FlxG.sound.play(Paths.sound('scrollMenu'));
 	}
 
