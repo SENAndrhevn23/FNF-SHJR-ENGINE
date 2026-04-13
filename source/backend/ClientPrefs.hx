@@ -29,7 +29,7 @@ import states.TitleState;
 	public var hideHud:Bool = false;
 	public var noteOffset:Int = 0;
 
-	// ✅ Optimization settings (FIXED)
+	// SH+ANJR Optimization settings
 	public var disableComboPopup:Bool = false;
 	public var disableComboNumberPopup:Bool = false;
 	public var disableComboRatingPopup:Bool = false;
@@ -179,8 +179,13 @@ class ClientPrefs {
 		#if ACHIEVEMENTS_ALLOWED Achievements.load(); #end
 
 		for (key in Reflect.fields(data))
+		{
 			if (key != 'gameplaySettings' && Reflect.hasField(FlxG.save.data, key))
-				Reflect.setField(data, Reflect.field(FlxG.save.data, key));
+			{
+				// FIXED: Added the required 'key' argument for Reflect.setField
+				Reflect.setField(data, key, Reflect.field(FlxG.save.data, key));
+			}
+		}
 
 		if(Main.fpsVar != null)
 			Main.fpsVar.visible = data.showFPS;
