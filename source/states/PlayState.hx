@@ -193,16 +193,16 @@ class PlayState extends MusicBeatState
 	public var healthGain:Float = 1;
 	public var healthLoss:Float = 1;
 
+	//Optimizations settings
+	public var disableComboPopup:Bool = false;
+    public var disableComboNumberPopup:Bool = false;
+    public var disableComboRatingPopup:Bool = false;
+
 	public var guitarHeroSustains:Bool = false;
 	public var instakillOnMiss:Bool = false;
 	public var cpuControlled:Bool = false;
 	public var practiceMode:Bool = false;
 	public var pressMissDamage:Float = 0.05;
-
-	//Optimizations settings
-	public var disableComboPopup:Bool = false;
-    public var disableComboNumberPopup:Bool = false;
-    public var disableComboRatingPopup:Bool = false;
 
 	public var botplaySine:Float = 0;
 	public var botplayTxt:FlxText;
@@ -2526,6 +2526,10 @@ class PlayState extends MusicBeatState
 
 	public var totalPlayed:Int = 0;
 	public var totalNotesHit:Float = 0.0;
+
+	public var showCombo:Bool = false;
+	public var showComboNum:Bool = true;
+	public var showRating:Bool = true;
 
 	// Stores Ratings and Combo Sprites in a group
 	public var comboGroup:FlxSpriteGroup;
