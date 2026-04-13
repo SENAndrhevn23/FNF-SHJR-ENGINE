@@ -1,37 +1,28 @@
 package options;
 
-class OptimizationSettingsSubState extends BaseOptionsMenu
+class OptimizationSettingsSubstate extends BaseOptionsMenu
 {
 	public function new()
 	{
-		title = 'Optimization Settings';
-		rpcTitle = 'Optimization Settings Menu';
+		title = 'Optimization';
+		rpcTitle = 'Optimization Menu';
 
-		// Disable Combo Popup
-		var option:Option = new Option(
-			'Disable Combo Popup',
-			'If checked, completely disables combo popups.',
-			'disableComboPopup',
-			BOOL
-		);
+		var option:Option = new Option('Hide Combo Popup',
+			'If checked, the "Combo" text won\'t pop up.',
+			'disableComboPopup', 
+			BOOL);
 		addOption(option);
 
-		// Disable Combo Number Popup
-		var option:Option = new Option(
-			'Disable Combo Number Popup',
-			'If checked, hides combo numbers (e.g. 123, 456).',
-			'disableComboNumberPopup',
-			BOOL
-		);
+		var option:Option = new Option('Hide Combo Numbers',
+			'If checked, the combo number counter won\'t pop up.',
+			'disableComboNumberPopup', 
+			BOOL);
 		addOption(option);
 
-		// Disable Combo Rating Popup
-		var option:Option = new Option(
-			'Disable Combo Rating Popup',
-			'If checked, hides rating text (Sick!, Good!, etc).',
-			'disableComboRatingPopup',
-			BOOL
-		);
+		var option:Option = new Option('Hide Rating Popup',
+			'If checked, ratings like "Sick!" won\'t pop up.',
+			'disableComboRatingPopup', 
+			BOOL);
 		addOption(option);
 
 		super();
