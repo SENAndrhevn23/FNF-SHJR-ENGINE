@@ -10,15 +10,13 @@ class OptionsState extends MusicBeatState
 		'Controls',
 		'Adjust Delay and Combo',
 		'Graphics',
+		'Optimizations',
 		'Visuals',
-		'Gameplay',
-		'Optimization' // ✅ NEW
+		'Gameplay'
 		#if TRANSLATIONS_ALLOWED , 'Language' #end
 	];
-
 	private var grpOptions:FlxTypedGroup<Alphabet>;
 	private static var curSelected:Int = 0;
-
 	public static var menuBG:FlxSprite;
 	public static var onPlayState:Bool = false;
 
@@ -27,21 +25,25 @@ class OptionsState extends MusicBeatState
 		{
 			case 'Note Colors':
 				openSubState(new options.NotesColorSubState());
+
 			case 'Controls':
 				openSubState(new options.ControlsSubState());
+
 			case 'Graphics':
 				openSubState(new options.GraphicsSettingsSubState());
+
+			case 'Optimizations':
+				openSubState(new options.OptimizationsSubState());
+
 			case 'Visuals':
 				openSubState(new options.VisualsSettingsSubState());
+
 			case 'Gameplay':
 				openSubState(new options.GameplaySettingsSubState());
 
-			case 'Optimization': 
-				// ✅ FIXED CASE (Substate instead of SubState)
-				openSubState(new options.OptimizationSettingsSubstate());
-
 			case 'Adjust Delay and Combo':
 				MusicBeatState.switchState(new options.NoteOffsetState());
+
 			case 'Language':
 				openSubState(new options.LanguageSubState());
 		}
@@ -60,6 +62,7 @@ class OptionsState extends MusicBeatState
 		bg.antialiasing = ClientPrefs.data.antialiasing;
 		bg.color = 0xFFea71fd;
 		bg.updateHitbox();
+
 		bg.screenCenter();
 		add(bg);
 
@@ -68,12 +71,7 @@ class OptionsState extends MusicBeatState
 
 		for (num => option in options)
 		{
-			var optionText:Alphabet = new Alphabet(
-				0,
-				0,
-				Language.getPhrase('options_$option', option),
-				true
-			);
+			var optionText:Alphabet = new Alphabet(0, 0, Language.getPhrase('options_$option', option), true);
 			optionText.screenCenter();
 			optionText.y += (92 * (num - (options.length / 2))) + 45;
 			grpOptions.add(optionText);
@@ -105,12 +103,16 @@ class OptionsState extends MusicBeatState
 	{
 		super.update(elapsed);
 
-		if (controls.UI_UP_P) changeSelection(-1);
-		if (controls.UI_DOWN_P) changeSelection(1);
+		if (controls.UI_UP_P)
+			changeSelection(-1);
+
+		if (controls.UI_DOWN_P)
+			changeSelection(1);
 
 		if (controls.BACK)
 		{
 			FlxG.sound.play(Paths.sound('cancelMenu'));
+
 			if(onPlayState)
 			{
 				StageData.loadDirectory(PlayState.SONG);
@@ -118,16 +120,12 @@ class OptionsState extends MusicBeatState
 				FlxG.sound.music.volume = 0;
 			}
 			else
-			{
 				MusicBeatState.switchState(new MainMenuState());
-			}
 		}
 		else if (controls.ACCEPT)
-		{
 			openSelectedSubstate(options[curSelected]);
-		}
 	}
-
+	
 	function changeSelection(change:Int = 0)
 	{
 		curSelected = FlxMath.wrap(curSelected + change, 0, options.length - 1);
@@ -142,10 +140,12 @@ class OptionsState extends MusicBeatState
 				item.alpha = 1;
 				selectorLeft.x = item.x - 63;
 				selectorLeft.y = item.y;
+
 				selectorRight.x = item.x + item.width + 15;
 				selectorRight.y = item.y;
 			}
 		}
+
 		FlxG.sound.play(Paths.sound('scrollMenu'));
 	}
 
