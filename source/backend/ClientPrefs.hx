@@ -29,7 +29,7 @@ import states.TitleState;
 	public var hideHud:Bool = false;
 	public var noteOffset:Int = 0;
 
-	// SH+ANJR Optimization settings
+	// ✅ SH+ANJR Optimization settings 
 	public var disableComboPopup:Bool = false;
 	public var disableComboNumberPopup:Bool = false;
 	public var disableComboRatingPopup:Bool = false;
@@ -182,7 +182,7 @@ class ClientPrefs {
 		{
 			if (key != 'gameplaySettings' && Reflect.hasField(FlxG.save.data, key))
 			{
-				// FIXED: Added the required 'key' argument for Reflect.setField
+				// FIXED: Added 'key' argument to setField to resolve compile error
 				Reflect.setField(data, key, Reflect.field(FlxG.save.data, key));
 			}
 		}
