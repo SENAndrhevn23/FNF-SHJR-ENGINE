@@ -12,16 +12,13 @@
 
 	<set name="APP_ID" value="0x0100f6c013bbc000" />
 
-	<!-- Lua / scripting -->
 	<haxedef name="LINC_LUA_RELATIVE_DYNAMIC_LIB"/>
-
 	<app preloader="flixel.system.FlxPreloader" />
 
 	<set name="SWF_VERSION" value="11.8" />
 
 	<!-- ================= ENGINE FLAGS ================= -->
 
-	<!-- Desktop-only scripting -->
 	<define name="MODS_ALLOWED" if="desktop" />
 	<define name="HSCRIPT_ALLOWED" if="desktop" />
 	<define name="LUA_ALLOWED" if="desktop" />
@@ -31,12 +28,15 @@
 	<define name="TRANSLATIONS_ALLOWED" />
 	<define name="IRIS_DEBUG"/>
 
-	<!-- IMPORTANT FIX: disable threading on HTML5 -->
 	<define name="MULTITHREADED_LOADING" unless="html5" />
 	<define name="NO_THREADS" if="html5" />
 
 	<define name="SHOW_LOADING_SCREEN" />
 	<define name="PSYCH_WATERMARKS"/>
+
+	<!-- 🔥 CI / permission safety fixes -->
+	<define name="DISABLE_EXTERNAL_WRITES" />
+	<define name="NO_SYSTEM_PATH_WRITES" />
 
 	<section if="officialBuild">
 		<define name="TITLE_SCREEN_EASTER_EGG"/>
@@ -58,9 +58,10 @@
 
 	<!-- ================= BUILD PATH ================= -->
 
-	<set name="BUILD_DIR" value="export/debug" if="debug" />
-	<set name="BUILD_DIR" value="export/release" unless="debug" />
-	<set name="BUILD_DIR" value="export/32bit" if="32bits" />
+	<!-- 🔥 FIXED: CI-safe output folder -->
+	<set name="BUILD_DIR" value="artifacts/debug" if="debug" />
+	<set name="BUILD_DIR" value="artifacts/release" unless="debug" />
+	<set name="BUILD_DIR" value="artifacts/32bit" if="32bits" />
 
 	<classpath name="source" />
 
@@ -132,34 +133,19 @@
 	<haxelib name="hxdiscord_rpc" version="1.2.4" if="DISCORD_ALLOWED"/>
 	<haxelib name="flxanimate"/>
 
-	<!-- Disable Discord IO Thread -->
 	<haxedef name="DISCORD_DISABLE_IO_THREAD" if="hxdiscord_rpc" />
-
-	<haxedef name="NO_PRECOMPILED_HEADERS" if="linux" />
 	<haxelib name="hxcpp-debug-server" if="debug"/>
-
-	<haxedef name="HXC_LIBVLC_LOGGING" if="VIDEOS_ALLOWED debug" />
-	<haxedef name="HXVLC_NO_SHARE_DIRECTORY" if="VIDEOS_ALLOWED" />
-
-	<haxedef name="x86_BUILD" if="32bits" />
-
-	<!-- ================= FLIXEL SAFETY ================= -->
 
 	<haxedef name="FLX_NO_FOCUS_LOST_SCREEN" />
 	<haxedef name="FLX_NO_DEBUG" unless="debug" />
 	<haxedef name="NAPE_RELEASE_BUILD" unless="debug" />
 
-	<!-- ================= CRASH SUPPORT ================= -->
-
 	<haxedef name="HXCPP_CHECK_POINTER" if="CRASH_HANDLER" />
 	<haxedef name="HXCPP_STACK_LINE" if="CRASH_HANDLER" />
 	<haxedef name="HXCPP_STACK_TRACE" if="CRASH_HANDLER" />
 
-	<!-- ================= CLEANUP ================= -->
-
 	<haxedef name="no-deprecation-warnings" />
 	<haxedef name="hscriptPos" if="HSCRIPT_ALLOWED" />
-
 	<haxedef name="message.reporting" value="pretty" />
 
 	<!-- ================= ICON ================= -->
