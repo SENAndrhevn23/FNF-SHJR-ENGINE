@@ -3349,10 +3349,10 @@ for (i in 0...amount)
 		PlayState.SONG.notes[sectionIdx].sectionNotes.push([noteTime, noteData, 0, ""]);
 	}
 
-
 FlxG.state.reloadSecondary();
 trace('Added ' + amount + ' spam notes.');
 });
+}
 
 tab_group.add(addNotesBtn);
 
