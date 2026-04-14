@@ -431,7 +431,7 @@ class ChartingState extends MusicBeatState implements PsychUIEventHandler.PsychU
         addChartingTab();
         addDataTab();
         addEventsTab();
-        adNoteTab();
+        addNoteTab();
         addSectionTab();
         addSongTab();
         addSpamTab(); // new
@@ -3310,7 +3310,7 @@ class ChartingState extends MusicBeatState implements PsychUIEventHandler.PsychU
 		tab_group.add(opponentDropDown);
 		tab_group.add(playerDropDown);
 	}
-	
+
 function addSpamTab()
 {
 	var tab_group = mainBox.getTab('Spam').menu;
@@ -3335,25 +3335,23 @@ function addSpamTab()
 		var amount:Int = Std.int(amountStepper.value);
 		var density:Float = densityStepper.value;
 
-		var startTime:Float = curTime; // current cursor time
+		var startTime:Float = FlxG.state.curTime;
 
-		for (i in 0...amount)
-		{
-			var noteTime:Float = startTime + (i * density);
-			var noteData:Int = i % GRID_COLUMNS_PER_PLAYER;
+for (i in 0...amount)
+{
+	var noteTime:Float = startTime + (i * density);
+	var noteData:Int = i % GRID_COLUMNS_PER_PLAYER;
 
-			var sectionIdx:Int = Math.floor(noteTime / (Conductor.stepCrochet * 16));
+	var sectionIdx:Int = Math.floor(noteTime / (Conductor.stepCrochet * 16));
 
-			if (sectionIdx >= 0 && sectionIdx < _song.notes.length)
-			{
-				_song.notes[sectionIdx].sectionNotes.push([noteTime, noteData, 0, ""]);
-			}
-		}
+	if (sectionIdx >= 0 && sectionIdx < PlayState.SONG.notes.length)
+	{
+		PlayState.SONG.notes[sectionIdx].sectionNotes.push([noteTime, noteData, 0, ""]);
+	}
+}
 
-		reloadGridLayer();
-		softReloadNotes();
-		trace('Added ' + amount + ' spam notes.');
-	});
+FlxG.state.reloadSecondary();
+trace('Added ' + amount + ' spam notes.');
 
 	tab_group.add(addNotesBtn);
 }
