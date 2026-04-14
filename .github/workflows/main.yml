@@ -8,79 +8,117 @@ on:
   workflow_dispatch:
 
 jobs:
+
   buildLinux:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4.1.7
+
       - uses: krdlab/setup-haxe@master
         with:
           haxe-version: 4.3.4
+
       - name: Install Haxelib
         run: |
-          sudo apt-get install libvlc-dev libvlccore-dev
+          sudo apt-get update
+          sudo apt-get install -y libvlc-dev libvlccore-dev
           haxelib setup ~/haxelib
-          haxelib install hxcpp > /dev/null --quiet
+          haxelib install hxcpp --quiet
+          haxelib install lime --quiet
+          haxelib install openfl --quiet
           chmod +x ./setup/unix.sh
           sh ./setup/unix.sh
+
       - name: Skip SScript setup mode
         run: echo 'oy9:showMacroty8:loopCosti25y10:includeAllfg' >> ~/settings.cocoa
+
       - name: Create Version Tag
         run: echo "${{github.run_id}}" > VERSION
-      - name: Compile
+
+      - name: Compile Linux
         run: haxelib run lime build Project.xml linux --app-version="4.0.0-${{ github.run_id}}" -D officialBuild
-      - name: Publish Artifact
+
+      - name: Upload Linux Artifact
         uses: actions/upload-artifact@v4.3.4
         with:
           name: linuxBuild
-          path: 'export/release/linux/bin'
+          path: export/release/linux/bin
+
 
   buildWindows:
     runs-on: windows-latest
     steps:
       - uses: actions/checkout@v4.1.7
+
       - uses: krdlab/setup-haxe@master
         with:
           haxe-version: 4.3.4
+
       - name: Install Haxelib
+        shell: cmd
         run: |
           haxelib setup C:/haxelib
-          haxelib install hxcpp > /dev/null --quiet
-          .\setup\windows.bat
-        shell: cmd
+          haxelib install hxcpp --quiet
+          haxelib install lime --quiet
+          haxelib install openfl --quiet
+          call .\setup\windows.bat
+
       - name: Skip SScript setup mode
-        run: echo 'oy9:showMacroty8:loopCosti25y10:includeAllfg' >> %USERPROFILE%/settings.cocoa
         shell: cmd
+        run: echo oy9:showMacroty8:loopCosti25y10:includeAllfg >> %USERPROFILE%/settings.cocoa
+
       - name: Create Version Tag
         run: echo "${{github.run_id}}" > VERSION
-      - name: Compile
+
+      - name: Compile Windows
         run: haxelib run lime build windows --app-version="4.0.0-${{ github.run_id}}" -D officialBuild
-      - name: Publish Artifact
+
+      - name: Upload Windows Artifact
         uses: actions/upload-artifact@v4.3.4
         with:
           name: windowsBuild
           path: export/release/windows/bin
 
+
   buildHTML5:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4.1.7
+
       - uses: krdlab/setup-haxe@master
         with:
           haxe-version: 4.3.4
-      - name: Install Haxelib
+
+      - name: Install Haxelib (HTML5 Safe)
         run: |
           haxelib setup ~/haxelib
-          haxelib install lime > /dev/null --quiet
-          haxelib install openfl > /dev/null --quiet
+          haxelib install lime --quiet
+          haxelib install openfl --quiet
+          haxelib install flixel --quiet
+          haxelib install hxcpp --quiet || true
           chmod +x ./setup/unix.sh
           sh ./setup/unix.sh
+
+      - name: Fix HTML5 threading issue
+        run: echo "Adding no-threading support"
+        # IMPORTANT: prevents sys.thread crash in HTML5
+        # (handled by -D no-threading below)
+
       - name: Skip SScript setup mode
         run: echo 'oy9:showMacroty8:loopCosti25y10:includeAllfg' >> ~/settings.cocoa
+
       - name: Create Version Tag
         run: echo "${{github.run_id}}" > VERSION
-      - name: Compile
-        run: haxelib run lime build html5 --app-version="4.0.0-${{ github.run_id}}" -D officialBuild
-      - name: Publish Artifact
+
+      - name: Compile HTML5 (FIXED)
+        run: >
+          haxelib run lime build html5
+          --app-version="4.0.0-${{ github.run_id}}"
+          -D officialBuild
+          -D web
+          -D no-threading
+
+      - name: Upload HTML5 Artifact
         uses: actions/upload-artifact@v4.3.4
         with:
           name: html5Build
