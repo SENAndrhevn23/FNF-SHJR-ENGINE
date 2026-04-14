@@ -428,12 +428,13 @@ class ChartingState extends MusicBeatState implements PsychUIEventHandler.PsychU
 		
 		// TABS
 		////// for main box
-		addChartingTab();
-		addDataTab();
-		addEventsTab();
-		addNoteTab();
-		addSectionTab();
-		addSongTab();
+        addChartingTab();
+        addDataTab();
+        addEventsTab();
+        adNoteTab();
+        addSectionTab();
+        addSongTab();
+        addSpamTab(); // new
 		
 		////// for upper box
 		addFileTab();
@@ -3309,6 +3310,53 @@ class ChartingState extends MusicBeatState implements PsychUIEventHandler.PsychU
 		tab_group.add(opponentDropDown);
 		tab_group.add(playerDropDown);
 	}
+	
+function addSpamTab()
+{
+	var tab_group = mainBox.getTab('Spam').menu;
+	var objX = 10;
+	var objY = 25;
+
+	// Amount of notes
+	var amountStepper = new PsychUINumericStepper(objX, objY, 1, 10, 0, 999, 0);
+	tab_group.add(new FlxText(objX, objY - 15, 150, 'Note Amount:'));
+	tab_group.add(amountStepper);
+
+	// Density (ms between notes)
+	objY += 40;
+	var densityStepper = new PsychUINumericStepper(objX, objY, 5, 100, 1, 5000, 0);
+	tab_group.add(new FlxText(objX, objY - 15, 200, 'Note Density (ms):'));
+	tab_group.add(densityStepper);
+
+	// Button
+	objY += 45;
+	var addNotesBtn = new PsychUIButton(objX, objY, "Add Spam", function()
+	{
+		var amount:Int = Std.int(amountStepper.value);
+		var density:Float = densityStepper.value;
+
+		var startTime:Float = curTime; // current cursor time
+
+		for (i in 0...amount)
+		{
+			var noteTime:Float = startTime + (i * density);
+			var noteData:Int = i % GRID_COLUMNS_PER_PLAYER;
+
+			var sectionIdx:Int = Math.floor(noteTime / (Conductor.stepCrochet * 16));
+
+			if (sectionIdx >= 0 && sectionIdx < _song.notes.length)
+			{
+				_song.notes[sectionIdx].sectionNotes.push([noteTime, noteData, 0, ""]);
+			}
+		}
+
+		reloadGridLayer();
+		softReloadNotes();
+		trace('Added ' + amount + ' spam notes.');
+	});
+
+	tab_group.add(addNotesBtn);
+}
 
 	function addFileTab()
 	{
