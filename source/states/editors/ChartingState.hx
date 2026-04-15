@@ -3313,23 +3313,37 @@ class ChartingState extends MusicBeatState implements PsychUIEventHandler.PsychU
 
 function addSpamTab()
 {
-	var tab_group = mainBox.getTab('Spam').menu;
-	var _parent = this; // This captures the ChartingState context
+	var spamTab = mainBox.getTab('Spam');
+	if (spamTab == null)
+	{
+		trace("Spam tab is NULL! Creating it now...");
+		mainBox.addTab('Spam');
+		spamTab = mainBox.getTab('Spam');
+
+		if (spamTab == null)
+		{
+			trace("FAILED to create Spam tab!");
+			return;
+		}
+	}
+
+	var tab_group = spamTab.menu;
+	var _parent = this;
 	var objX = 10;
 	var objY = 25;
 
-	// Note Amount Stepper
+	// Amount
 	var amountStepper = new PsychUINumericStepper(objX, objY, 1, 10, 0, 999, 0);
 	tab_group.add(new FlxText(objX, objY - 15, 150, 'Note Amount:'));
 	tab_group.add(amountStepper);
 
-	// Note Density Stepper
+	// Density
 	objY += 40;
 	var densityStepper = new PsychUINumericStepper(objX, objY, 5, 100, 1, 5000, 0);
 	tab_group.add(new FlxText(objX, objY - 15, 200, 'Note Density (ms):'));
 	tab_group.add(densityStepper);
 
-	// Add Spam Button
+	// Button
 	objY += 45;
 
 	var addNotesBtn = new PsychUIButton(objX, objY, "Add Spam", function()
@@ -3338,24 +3352,22 @@ function addSpamTab()
 		var density:Float = densityStepper.value;
 		var startTime:Float = Conductor.songPosition;
 
+		if (amount <= 0) return;
+
 		for (i in 0...amount)
 		{
 			var noteTime:Float = startTime + (i * density);
-			var noteData:Int = i % 4; 
+			var noteData:Int = i % GRID_COLUMNS_PER_PLAYER;
 
-			var sectionIdx:Int = Math.floor(noteTime / (Conductor.stepCrochet * 16));
-
-			if (sectionIdx >= 0 && sectionIdx < PlayState.SONG.notes.length)
-			{
-				PlayState.SONG.notes[sectionIdx].sectionNotes.push([noteTime, noteData, 0, ""]);
-			}
+			// 🔥 REAL FIX: use editor function instead of SONG editing
+			_parent.addNote(noteTime, noteData, 0, false);
 		}
 
-		// Direct calls using the captured _parent context
-		//_parent.loadSong(PlayState.SONG.song); 
-		//_parent.reloadUI(); 
-		
-		trace('Successfully added ' + amount + ' notes.');
+		// 🔥 refresh editor properly
+		_parent.updateGrid(false);
+		_parent.updateNoteUI();
+
+		trace('Successfully added ' + amount + ' spam notes.');
 	});
 
 	tab_group.add(addNotesBtn);
