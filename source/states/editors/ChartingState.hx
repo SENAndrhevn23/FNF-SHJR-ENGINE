@@ -3316,7 +3316,6 @@ function addSpamTab()
 	var spamTab = mainBox.getTab('Spam');
 	if (spamTab == null)
 	{
-		trace("Spam tab is NULL! Creating it now...");
 		mainBox.addTab('Spam');
 		spamTab = mainBox.getTab('Spam');
 
@@ -3343,9 +3342,9 @@ function addSpamTab()
 	tab_group.add(new FlxText(objX, objY - 15, 200, 'Note Density (ms):'));
 	tab_group.add(densityStepper);
 
-	// Button
 	objY += 45;
 
+	// Button
 	var addNotesBtn = new PsychUIButton(objX, objY, "Add Spam", function()
 	{
 		var amount:Int = Std.int(amountStepper.value);
@@ -3359,13 +3358,14 @@ function addSpamTab()
 			var noteTime:Float = startTime + (i * density);
 			var noteData:Int = i % GRID_COLUMNS_PER_PLAYER;
 
-			// 🔥 REAL FIX: use editor function instead of SONG editing
-			_parent.addNote(noteTime, noteData, 0, false);
+			// ✔ correct method for YOUR engine
+			_parent.createNote([noteTime, noteData, 0, ""], Conductor.currentSection);
 		}
 
-		// 🔥 refresh editor properly
-		_parent.updateGrid(false);
-		_parent.updateNoteUI();
+		// ✔ correct refresh chain for YOUR fork
+		_parent.updateChartData();
+		_parent.updateNotesRGB();
+		_parent.softReloadNotes();
 
 		trace('Successfully added ' + amount + ' spam notes.');
 	});
