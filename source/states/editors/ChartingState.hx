@@ -681,82 +681,130 @@ class ChartingState extends MusicBeatState implements PsychUIEventHandler.PsychU
 		for (num => key in keysArray)
 			_keysPressedBuffer[num] = FlxG.keys.checkStatus(key, JUST_PRESSED);
 
-		if(autoSaveCap > 0)
+if (autoSaveCap > 0)
+{
+	autoSaveTime += elapsed / 60.0;
+
+	if (autoSaveTime >= autoSaveCap
+	#if debug || FlxG.keys.justPressed.NUMPADMULTIPLY #end)
+	{
+		FlxTween.cancelTweensOf(autoSaveIcon);
+		autoSaveTime = 0;
+		autoSaveIcon.alpha = 0;
+
+		updateChartData();
+
+		// -----------------------------
+		// NEW: lightweight export system
+		// -----------------------------
+
+		var chartName:String = "unknown";
+
+		if (Song.chartPath != null)
 		{
-			autoSaveTime += elapsed / 60.0;
-			//trace(autoSaveTime);
-			//#if debug if(FlxG.keys.justPressed.J) autoSaveTime += 20/60.0; #end
-			if(autoSaveTime >= autoSaveCap #if debug || FlxG.keys.justPressed.NUMPADMULTIPLY #end)
+			chartName = Song.chartPath.replace("\\", "/");
+			chartName = chartName.substring(
+				chartName.lastIndexOf("/") + 1,
+				chartName.lastIndexOf(".")
+			);
+		}
+
+		chartName += DateTools.format(Date.now(), "_%Y-%m-%d_%H-%M-%S");
+
+		// -----------------------------
+		// NEW: avoid Reflect.copy (slow)
+		// -----------------------------
+
+		var songData:SwagSong = PlayState.SONG;
+
+		var exportData:Dynamic = {
+			song: songData.song,
+			notes: songData.notes,
+			events: songData.events,
+			bpm: songData.bpm,
+			needsVoices: songData.needsVoices,
+			speed: songData.speed,
+			offset: songData.offset,
+
+			player1: songData.player1,
+			player2: songData.player2,
+			gfVersion: songData.gfVersion,
+			stage: songData.stage,
+			format: songData.format,
+
+			gameOverChar: songData.gameOverChar,
+			gameOverSound: songData.gameOverSound,
+			gameOverLoop: songData.gameOverLoop,
+			gameOverEnd: songData.gameOverEnd,
+
+			disableNoteRGB: songData.disableNoteRGB,
+			arrowSkin: songData.arrowSkin,
+			splashSkin: songData.splashSkin,
+
+			// metadata (new system)
+			__autosave: true,
+			__timestamp: Date.now().getTime(),
+			__version: "json_v2"
+		};
+
+		// -----------------------------
+		// NEW: JSON stringify (clean)
+		// -----------------------------
+
+		var dataToSave:String = haxe.Json.stringify(exportData);
+
+		// -----------------------------
+		// File output
+		// -----------------------------
+
+		if (!FileSystem.isDirectory("backups"))
+			FileSystem.createDirectory("backups");
+
+		File.saveContent(
+			'backups/$chartName.$BACKUP_EXT',
+			dataToSave
+		);
+
+		// -----------------------------
+		// Backup cleanup (unchanged but cleaner flow)
+		// -----------------------------
+
+		if (backupLimit > 0)
+		{
+			var files = FileSystem.readDirectory("backups")
+				.filter(file -> file.endsWith(".$BACKUP_EXT"));
+
+			if (files.length > backupLimit)
 			{
-				FlxTween.cancelTweensOf(autoSaveIcon);
-				autoSaveTime = 0;
-				autoSaveIcon.alpha = 0;
-				updateChartData();
-				var chartName:String = 'unknown';
-				if(Song.chartPath != null)
-				{
-					chartName = Song.chartPath.replace('\\', '/');
-					chartName = chartName.substring(chartName.lastIndexOf('/')+1, chartName.lastIndexOf('.'));
-				}
-				chartName += DateTools.format(Date.now(), '_%Y-%m-%d_%H-%M-%S');
-				var songCopy:SwagSong = Reflect.copy(PlayState.SONG);
-				Reflect.setField(songCopy, '__original_path', Song.chartPath);
-				var dataToSave:String = haxe.Json.stringify(songCopy);
-				//trace(chartName, dataToSave);
-				if(!FileSystem.isDirectory('backups')) FileSystem.createDirectory('backups');
-				File.saveContent('backups/$chartName.$BACKUP_EXT', dataToSave);
-
-				if(backupLimit > 0)
-				{
-					var files:Array<String> = FileSystem.readDirectory('backups/').filter((file:String) -> file.endsWith('.$BACKUP_EXT'));
-					if(files.length > backupLimit)
-					{
-						var incorrect:Array<String> = [];
-						var map:Map<String, Float> = [];
-						for(file in files)
-						{
-							var split:Array<String> = file.split('_');
-							if(split.length > 2) //is properly formatted
-							{
-								try
-								{
-									var timeStr:String = split[split.length-1].replace('-', ':');
-									timeStr = timeStr.substr(0, timeStr.indexOf('.'));
-
-									var fileJoin:String = split[split.length-2] + ' ' + timeStr;
-									var date:Date = Date.fromString(fileJoin);
-									//trace(fileJoin, date.getTime());
-									map.set(file, date.getTime());
-								}
-								catch(e:Exception)
-								{
-									incorrect.push(file);
-								}
-							}
-							else incorrect.push(file);
-						}
-
-						if(incorrect.length > 0) files = files.filter((file:String) -> !incorrect.contains(file));
-						files.sort(function(a:String, b:String) return map.get(a) > map.get(b) ? 1 : -1);
-
-						while(files.length > backupLimit)
-						{
-							var file = files.shift();
-							//trace('removed $file');
-							try
-							{
-								FileSystem.deleteFile('backups/$file');
-							}
-							catch(e:Exception) {}
-						}
-					}
-				}
-
-				FlxTween.tween(autoSaveIcon, {alpha: 1}, 0.5, {onComplete: function(_)
-					FlxTween.tween(autoSaveIcon, {alpha: 0}, 0.5, {startDelay: 2})
+				files.sort((a, b) -> {
+					return FileSystem.stat("backups/" + a).mtime.getTime()
+						> FileSystem.stat("backups/" + b).mtime.getTime()
+						? 1 : -1;
 				});
+
+				while (files.length > backupLimit)
+				{
+					var file = files.shift();
+					try FileSystem.deleteFile("backups/" + file);
+					catch (e:Dynamic) {}
+				}
 			}
 		}
+
+		// -----------------------------
+		// UI animation
+		// -----------------------------
+
+		FlxTween.tween(autoSaveIcon, {alpha: 1}, 0.5, {
+			onComplete: function(_)
+			{
+				FlxTween.tween(autoSaveIcon, {alpha: 0}, 0.5, {
+					startDelay: 2
+				});
+			}
+		});
+	}
+}
 
 		ClientPrefs.toggleVolumeKeys(PsychUIInputText.focusOn == null);
 
